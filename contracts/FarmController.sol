@@ -196,7 +196,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
 
     function _checkpoint(uint256 _pid, address _user) internal {
         PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][msg.sender];
+        UserInfo storage user = userInfo[_pid][_user];
         uint256 l = (k * user.amount) / 100;
         uint256 votingTotal = votingEscrow.totalSupply();
         if (votingTotal > 0)
