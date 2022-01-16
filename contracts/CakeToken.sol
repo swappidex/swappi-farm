@@ -122,7 +122,10 @@ contract CakeToken is ERC20("PancakeSwap Token", "Cake", 18), Ownable {
             nonce == nonces[signatory]++,
             "CAKE::delegateBySig: invalid nonce"
         );
-        require(block.timestamp <= expiry, "CAKE::delegateBySig: signature expired");
+        require(
+            block.timestamp <= expiry,
+            "CAKE::delegateBySig: signature expired"
+        );
         return _delegate(signatory, delegatee);
     }
 

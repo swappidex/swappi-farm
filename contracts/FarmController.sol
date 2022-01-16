@@ -171,7 +171,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
                 pool.allocPoint) / totalAllocPoint;
         pool.accRewardPerShare =
             pool.accRewardPerShare +
-            (reward * 1e18) /
+            (reward * (10**pool.token.decimals())) /
             pool.workingSupply;
         pool.lastRewardTime = block.timestamp;
     }
@@ -186,7 +186,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
             reward =
                 (user.workingSupply *
                     (pool.accRewardPerShare - user.rewardPerShare)) /
-                1e18;
+                (10**pool.token.decimals());
             if (reward > 0) {
                 cake.mint(_user, reward);
             }
