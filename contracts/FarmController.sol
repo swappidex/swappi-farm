@@ -258,7 +258,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
             votingEscrow.balanceOf(_user) == 0,
             "FramController: user locked balance is not zero"
         );
-        UserInfo storage user = userInfo[_pid][msg.sender];
+        UserInfo storage user = userInfo[_pid][_user];
         uint256 oldWorkingSupply = user.workingSupply;
         _updatePool(_pid);
         _updateUser(_pid, _user);
