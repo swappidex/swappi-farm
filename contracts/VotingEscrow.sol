@@ -88,7 +88,7 @@ contract VotingEscrow is ReentrancyGuard, WhitelistedRole, NeedInitialize {
             "VotingEscrow: unlock time < current timestamp"
         );
         require(
-            _unlockTime < block.timestamp + maxTime,
+            _unlockTime <= block.timestamp + maxTime,
             "VotingEscrow: exceed maxlock time"
         );
 
