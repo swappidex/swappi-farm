@@ -4,7 +4,8 @@ pragma solidity 0.8.2;
 import "./interfaces/IERC20.sol";
 import "./libraries/SafeERC20.sol";
 
-import "./CakeToken.sol";
+import "./PPIToken.sol";
+import "./PPIRate.sol";
 import "./VotingEscrow.sol";
 import "./utils/NeedInitialize.sol";
 import "./roles/WhitelistedRole.sol";
@@ -29,10 +30,8 @@ contract FarmController is NeedInitialize, WhitelistedRole {
         uint256 accRewardPerShare; // Accumulated reward per share.
     }
 
-    CakeToken public cake;
+    PPIToken public ppi;
     VotingEscrow public votingEscrow;
-    // reward tokens created per second.
-    uint256 public rewardPerSecond;
     // user_boost_share = min(
     //   user_stake_amount,
     //   k% * user_stake_amount + (1 - k%) * total_stake_amount * (user_locked_share / total_locked_share)
@@ -45,8 +44,14 @@ contract FarmController is NeedInitialize, WhitelistedRole {
     mapping(uint256 => mapping(address => UserInfo)) public userInfo;
     // Total allocation points. Must be the sum of all allocation points in all pools.
     uint256 public totalAllocPoint;
-    // The time when reward mining starts.
-    uint256 public startTime;
+    // treasury address
+    address public treasuryAddr;
+    // market address
+    address public marketAddr;
+    // dev address
+    address public devAddr;
+    // PPI Rate
+    address public ppiRate;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
@@ -57,23 +62,29 @@ contract FarmController is NeedInitialize, WhitelistedRole {
     );
 
     function initialize(
-        address _cake, // reward token
-        uint256 _rewardPerSecond,
+        address _treasuryAddr,
+        address _marketAddr,
+        address _devAddr,
+        address _ppiRate,
+        address _ppi, // reward token
         uint256 _startTime,
         address _token // first pool
     ) public onlyInitializeOnce {
         _addWhitelistAdmin(msg.sender);
 
-        cake = CakeToken(_cake);
-        rewardPerSecond = _rewardPerSecond;
-        startTime = _startTime;
+        ppiRate = _ppiRate;
+        treasuryAddr = _treasuryAddr;
+        marketAddr = _marketAddr;
+        devAddr = _devAddr;
+
+        ppi = PPIToken(_ppi);
 
         // first farming pool
         poolInfo.push(
             PoolInfo({
                 token: IERC20(_token),
                 allocPoint: 1000,
-                lastRewardTime: startTime,
+                lastRewardTime: _startTime,
                 totalSupply: 0,
                 workingSupply: 0,
                 accRewardPerShare: 0
@@ -107,19 +118,22 @@ contract FarmController is NeedInitialize, WhitelistedRole {
     function add(
         uint256 _allocPoint,
         IERC20 _token,
+        uint256 _startTime,
         bool _withUpdate
     ) public onlyWhitelistAdmin {
         if (_withUpdate) {
             massUpdatePools();
         }
-        uint256 lastRewardTime =
-            block.timestamp > startTime ? block.timestamp : startTime;
+        require(
+            _startTime >= block.timestamp,
+            "FarmController: invalid start time"
+        );
         totalAllocPoint = totalAllocPoint + _allocPoint;
         poolInfo.push(
             PoolInfo({
                 token: _token,
                 allocPoint: _allocPoint,
-                lastRewardTime: lastRewardTime,
+                lastRewardTime: _startTime,
                 totalSupply: 0,
                 workingSupply: 0,
                 accRewardPerShare: 0
@@ -166,9 +180,16 @@ contract FarmController is NeedInitialize, WhitelistedRole {
             return;
         }
         uint256 reward =
-            ((block.timestamp - pool.lastRewardTime) *
-                rewardPerSecond *
-                pool.allocPoint) / totalAllocPoint;
+            (PPIRate(ppiRate).calculateReward(
+                pool.lastRewardTime,
+                block.timestamp
+            ) * pool.allocPoint) / totalAllocPoint;
+        // reward allocation
+        ppi.mint(treasuryAddr, (reward * 15) / 100);
+        ppi.mint(devAddr, (reward * 15) / 100);
+        ppi.mint(marketAddr, (reward * 20) / 100);
+        reward = (reward * 50) / 100;
+        // update prefix sum
         pool.accRewardPerShare =
             pool.accRewardPerShare +
             (reward * (10**pool.token.decimals())) /
@@ -188,7 +209,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
                     (pool.accRewardPerShare - user.rewardPerShare)) /
                 (10**pool.token.decimals());
             if (reward > 0) {
-                cake.mint(_user, reward);
+                ppi.mint(_user, reward);
             }
             user.rewardPerShare = pool.accRewardPerShare;
         }
