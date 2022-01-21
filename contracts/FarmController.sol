@@ -92,7 +92,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
         );
 
         totalAllocPoint = 1000;
-        k = 40;
+        k = 33;
     }
 
     function poolLength() external view returns (uint256) {
