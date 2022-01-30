@@ -65,6 +65,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
         address _treasuryAddr,
         address _marketAddr,
         address _devAddr,
+        address _votingEscrow,
         address _ppiRate,
         address _ppi, // reward token
         uint256 _startTime,
@@ -78,6 +79,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
         devAddr = _devAddr;
 
         ppi = PPIToken(_ppi);
+        votingEscrow = VotingEscrow(_votingEscrow);
 
         // first farming pool
         poolInfo.push(
