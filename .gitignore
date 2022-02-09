@@ -2,3 +2,6 @@ node_modules/
 build/
 artifacts/
 cache/
+coverage.json
+coverage/
+.DS_Store

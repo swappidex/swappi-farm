@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "contract_prettier": "prettier --write contracts/**/*.sol contracts/*.sol"
+    "contract_prettier": "prettier --write contracts/**/*.sol contracts/*.sol",
+    "prettier": "prettier --single-quote --trailing-comma all --write \"test/*.js\" test/**/*.js *.js"
   },
   "author": "",
   "license": "ISC",
