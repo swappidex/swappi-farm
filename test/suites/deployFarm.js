@@ -3,7 +3,7 @@ const BigNumber = require('bignumber.js');
 
 module.exports = function () {
   let w3 = web3;
-  beforeEach(function () {
+  before(function () {
     ({ contractAddress, admin } = global);
 
     ({ deployContract, deployInProxy, ethTransact, config } = global);
@@ -44,6 +44,7 @@ module.exports = function () {
       config.releaseRate.length * config.timer.MONTH + config.startTime,
       0,
     ]);
+    config.rates = rates;
     await PPIRate.instance.methods.initialize(rates).send({ from: admin });
   });
 

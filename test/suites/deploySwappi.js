@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const BigNumber = require('bignumber.js');
 
 module.exports = function () {
-  beforeEach(function () {
+  before(function () {
     ({ contractAddress, admin } = global);
 
     ({ deployContract, deployInProxy, ethTransact } = global);

@@ -117,7 +117,7 @@ contract VotingEscrow is ReentrancyGuard, WhitelistedRole, NeedInitialize {
         );
 
         uint256 newAmount = user.amount + _amount;
-        _checkpoint(user.amount, user.unlockTime, newAmount, user.unlockTime);
+        _checkpoint(newAmount, user.unlockTime, user.amount, user.unlockTime);
         unlockSchedule[user.unlockTime] =
             unlockSchedule[user.unlockTime] +
             _amount;
@@ -146,7 +146,7 @@ contract VotingEscrow is ReentrancyGuard, WhitelistedRole, NeedInitialize {
             "VotingEscrow: Voting lock cannot exceed max lock time"
         );
 
-        _checkpoint(user.amount, user.unlockTime, user.amount, _unlockTime);
+        _checkpoint(user.amount, _unlockTime, user.amount, user.unlockTime);
         unlockSchedule[user.unlockTime] =
             unlockSchedule[user.unlockTime] -
             user.amount;

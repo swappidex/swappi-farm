@@ -4,10 +4,11 @@ const SECOND = 1;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
+const WEEK = 7 * DAY;
 const MONTH = 30 * DAY;
 const YEAR = 365 * DAY;
 
-const timer = { SECOND, MINUTE, HOUR, DAY, MONTH, YEAR };
+const timer = { SECOND, MINUTE, HOUR, DAY, WEEK, MONTH, YEAR };
 
 function loadContracts(global, w3) {
   let path = __dirname + '/../artifacts/contracts';
