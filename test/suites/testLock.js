@@ -163,8 +163,6 @@ module.exports = function () {
     expect(diff >= 0 && diff <= 3).to.equal(true);
 
     // check working supply
-    console.log(await global.FarmController.instance.methods.poolInfo(0).call());
-    console.log(await global.FarmController.instance.methods.userInfo(0, admin).call());
     expect(
       (await global.FarmController.instance.methods.userInfo(0, admin).call())
         .workingSupply,
