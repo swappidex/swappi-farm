@@ -77,6 +77,11 @@ module.exports = function () {
   });
 
   it('add WCFX/ETH LP pool', async function () {
+    poolInfos = await global.FarmController.instance.methods
+      .getPoolInfo(0)
+      .call();
+    expect(poolInfos[0].totalSupply).to.equal('0');
+
     await global.FarmController.instance.methods
       .add(
         500,

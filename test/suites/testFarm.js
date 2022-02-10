@@ -110,4 +110,26 @@ module.exports = function () {
     expect(balance).to.equal(reward);
     setEVMTimestamp(evmTime);
   });
+
+  it('Change Pool Allocate Point', async function () {
+    expect(
+      await global.FarmController.instance.methods.totalAllocPoint().call(),
+    ).to.equal('1500');
+
+    evmTime += 10;
+    await network.provider.send('evm_setNextBlockTimestamp', [evmTime]);
+    await global.FarmController.instance.methods
+      .set(0, 500, true)
+      .send({ from: admin });
+
+    expect(
+      await global.FarmController.instance.methods.totalAllocPoint().call(),
+    ).to.equal('1000');
+    poolInfos = await global.FarmController.instance.methods
+      .getPoolInfo(0)
+      .call('latest');
+    expect(poolInfos[0].allocPoint).to.equal('500');
+
+    setEVMTimestamp(evmTime);
+  });
 };
