@@ -40,6 +40,14 @@ module.exports = function () {
     expect(new BigNumber(lpBefore).minus(lpAfter).toString(10)).to.equal(
       '10000000',
     );
+    // send to dummy
+    global.dummy = global.getNewTestUsers(1)[0];
+    await global.SwappiPair.instance.methods
+      .transfer(global.dummy, '1000000000')
+      .send({ from: admin });
+    await global.SwappiPair.instance.methods
+      .approve(contractAddress.FarmController, global.maxInt)
+      .send({ from: global.dummy });
   });
 
   it('PPIRate Reward Check', async function () {

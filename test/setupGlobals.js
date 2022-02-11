@@ -192,6 +192,32 @@ module.exports = async function () {
     global.timestamp = newTimestamp;
   };
 
+  global.expectRevert = async (promise, reason) => {
+    let failed = false;
+    try {
+      await promise;
+    } catch (e) {
+      failed = true;
+      let revertMsg = undefined;
+      if (
+        e.message.startsWith(
+          `VM Exception while processing transaction: reverted with reason string '`,
+        )
+      ) {
+        revertMsg = e.message.slice(72, e.message.length - 1);
+      }
+      if (
+        e.message.startsWith(
+          `Returned error: VM Exception while processing transaction: revert with reason "`,
+        )
+      ) {
+        revertMsg = e.message.slice(79, e.message.length - 1);
+      }
+      expect(revertMsg).to.equal(reason);
+    }
+    expect(failed).to.equal(true);
+  };
+
   global.getEVMTimestamp = function () {
     if (global.timestamp) {
       return global.timestamp;

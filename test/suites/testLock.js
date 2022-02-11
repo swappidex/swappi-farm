@@ -26,13 +26,20 @@ module.exports = function () {
         .balanceOf(user)
         .call({}, 'latest'),
     ).to.equal(balance);
+    userInfo.balance = balance;
     return userInfo;
   }
 
   before(function () {
     ({ contractAddress, admin, config } = global);
 
-    ({ deployContract, deployInProxy, ethTransact, config } = global);
+    ({
+      deployContract,
+      deployInProxy,
+      expectRevert,
+      ethTransact,
+      config,
+    } = global);
 
     ({ getEVMTimestamp, setEVMTimestamp } = global);
   });
@@ -104,7 +111,7 @@ module.exports = function () {
   });
 
   it('Create Dummy', async function () {
-    dummy = global.getNewTestUsers(1)[0];
+    dummy = global.dummy;
     await global.PPI.instance.methods
       .transfer(dummy, new BigNumber(1e19).toString(10))
       .send({ from: admin });
@@ -148,9 +155,15 @@ module.exports = function () {
     await global.VotingEscrow.instance.methods
       .createLock(
         new BigNumber(2e18).toString(10),
-        evmTime + 40 * config.timer.WEEK,
+        Number(userInfo.unlockTime) + 10 * config.timer.WEEK,
       )
       .send({ from: dummy });
+
+    expect(
+      await global.VotingEscrow.instance.methods
+        .unlockSchedule(Number(userInfo.unlockTime) + 10 * config.timer.WEEK)
+        .call(),
+    ).to.equal(new BigNumber(2e18).toString(10));
 
     userInfo = await checkUser(admin);
     let diff = new BigNumber(
@@ -168,6 +181,109 @@ module.exports = function () {
         .workingSupply,
     ).to.equal('4999999');
 
-    setEVMTimestamp(evmTime);
+    evmTime = evmTime + 2 * config.timer.WEEK;
+  });
+
+  it('refresh boost, kick', async function () {
+    await network.provider.send('evm_setNextBlockTimestamp', [
+      evmTime + 5 * config.timer.WEEK,
+    ]);
+    // a irrelevant transaction
+    await global.BTC.instance.methods
+      .mint(admin, new BigNumber(1e27).toString(10))
+      .send({ from: admin });
+    // check working supply
+    expect(
+      (await global.FarmController.instance.methods.userInfo(0, admin).call())
+        .workingSupply,
+    ).to.equal('4999999');
+
+    // apply boost
+    await global.FarmController.instance.methods
+      .deposit(0, 0)
+      .send({ from: admin });
+
+    let adminInfo = await checkUser(admin);
+    let totalSupply = await VotingEscrow.instance.methods.totalSupply().call();
+
+    // check working supply
+    let w = (
+      await global.FarmController.instance.methods.userInfo(0, admin).call()
+    ).workingSupply;
+    expect(w).to.equal(
+      new BigNumber('5000000')
+        .multipliedBy(33)
+        .dividedToIntegerBy(100)
+        .plus(
+          new BigNumber(
+            (
+              await global.FarmController.instance.methods.poolInfo(0).call()
+            ).totalSupply,
+          )
+            .multipliedBy(adminInfo.balance)
+            .dividedToIntegerBy(totalSupply)
+            .multipliedBy(67)
+            .dividedToIntegerBy(100),
+        )
+        .toString(10),
+    );
+    // try kick but fail
+    await expectRevert(
+      global.FarmController.instance.methods
+        .kick(0, admin)
+        .send({ from: dummy }),
+      'FarmController: user locked balance is not zero',
+    );
+    // try withdraw but fail
+    await expectRevert(
+      global.VotingEscrow.instance.methods.withdraw().send({ from: admin }),
+      'VotingEscrow: The lock is not expired',
+    );
+
+    await network.provider.send('evm_setNextBlockTimestamp', [
+      evmTime + 18 * config.timer.WEEK,
+    ]);
+    // a irrelevant transaction
+    await global.BTC.instance.methods
+      .mint(admin, new BigNumber(1e27).toString(10))
+      .send({ from: admin });
+    // check balance
+    adminInfo = await checkUser(admin);
+    expect(adminInfo.balance).to.equal('0');
+    // check working supply
+    expect(
+      (await global.FarmController.instance.methods.userInfo(0, admin).call())
+        .workingSupply,
+    ).to.equal(w);
+    // kick
+    await global.FarmController.instance.methods
+      .kick(0, admin)
+      .send({ from: dummy });
+    expect(
+      (await global.FarmController.instance.methods.userInfo(0, admin).call())
+        .workingSupply,
+    ).to.equal('1650000');
+    // try kick again but fail
+    await expectRevert(
+      global.FarmController.instance.methods
+        .kick(0, admin)
+        .send({ from: dummy }),
+      'FarmController: user working supply is up-to-date',
+    );
+  });
+
+  it('withdraw', async function () {
+    let balanceBefore = await global.PPI.instance.methods
+      .balanceOf(admin)
+      .call();
+    await global.VotingEscrow.instance.methods.withdraw().send({ from: admin });
+    let balanceAfter = await global.PPI.instance.methods
+      .balanceOf(admin)
+      .call();
+    expect(
+      new BigNumber(balanceAfter).minus(balanceBefore).toString(10),
+    ).to.equal(new BigNumber(2e18).toString(10));
+    let adminInfo = await checkUser(admin);
+    expect(adminInfo.amount).to.equal('0');
   });
 };
