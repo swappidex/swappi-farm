@@ -279,7 +279,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
     function kick(uint256 _pid, address _user) public {
         require(
             votingEscrow.balanceOf(_user) == 0,
-            "FramController: user locked balance is not zero"
+            "FarmController: user locked balance is not zero"
         );
         UserInfo storage user = userInfo[_pid][_user];
         uint256 oldWorkingSupply = user.workingSupply;
