@@ -35,11 +35,10 @@ contract PPIRate is NeedInitialize {
             uint256 l = timeRate[i].startTime;
             if (end <= l) break;
             if (l < start) l = start;
-            uint256 r;
-            if (i + 1 < len) {
+            uint256 r = end;
+            if (i + 1 < len && timeRate[i + 1].startTime < r) {
                 r = timeRate[i + 1].startTime;
             }
-            if (r > end) r = end;
             reward = reward + timeRate[i].rate * (r - l);
         }
     }
