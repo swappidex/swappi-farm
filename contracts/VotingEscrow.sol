@@ -49,7 +49,7 @@ contract VotingEscrow is ReentrancyGuard, WhitelistedRole, NeedInitialize {
         string memory _symbol,
         uint8 _decimals,
         address _token
-    ) public onlyInitializeOnce {
+    ) external onlyInitializeOnce {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;
@@ -246,6 +246,10 @@ contract VotingEscrow is ReentrancyGuard, WhitelistedRole, NeedInitialize {
             return 0;
         }
         return (user.amount * (user.unlockTime - _timestamp)) / maxTime;
+    }
+
+    function checkpoint() external {
+        _checkpoint(0, 0, 0, 0);
     }
 
     function _checkpoint(
