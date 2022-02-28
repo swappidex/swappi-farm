@@ -70,7 +70,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
         address _ppi, // reward token
         uint256 _startTime,
         address _token // first pool
-    ) public onlyInitializeOnce {
+    ) external onlyInitializeOnce {
         _addWhitelistAdmin(msg.sender);
 
         ppiRate = _ppiRate;
@@ -122,7 +122,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
         IERC20 _token,
         uint256 _startTime,
         bool _withUpdate
-    ) public onlyWhitelistAdmin {
+    ) external onlyWhitelistAdmin {
         if (_withUpdate) {
             massUpdatePools();
         }
@@ -148,7 +148,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
         uint256 _pid,
         uint256 _allocPoint,
         bool _withUpdate
-    ) public onlyWhitelistAdmin {
+    ) external onlyWhitelistAdmin {
         if (_withUpdate) {
             massUpdatePools();
         }
@@ -235,7 +235,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
 
     // Deposit tokens to Controller for reward allocation.
     function deposit(uint256 _pid, uint256 _amount)
-        public
+        external
         returns (uint256 reward)
     {
         _updatePool(_pid);
@@ -257,7 +257,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
 
     // Withdraw tokens from Controller.
     function withdraw(uint256 _pid, uint256 _amount)
-        public
+        external
         returns (uint256 reward)
     {
         PoolInfo storage pool = poolInfo[_pid];
@@ -276,7 +276,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
     }
 
     // kick someone from boosting if his/her locked share expired
-    function kick(uint256 _pid, address _user) public {
+    function kick(uint256 _pid, address _user) external {
         require(
             votingEscrow.balanceOf(_user) == 0,
             "FarmController: user locked balance is not zero"

@@ -12,7 +12,7 @@ contract PPIRate is NeedInitialize {
     // reward in seconds
     Rate[] public timeRate;
 
-    function initialize(Rate[] memory rates) public onlyInitializeOnce {
+    function initialize(Rate[] calldata rates) external onlyInitializeOnce {
         require(rates.length > 0, "PPIRate: empty rate");
         require(rates[rates.length - 1].rate == 0, "PPIRate: never end");
         uint256 t = block.timestamp;
@@ -24,7 +24,7 @@ contract PPIRate is NeedInitialize {
     }
 
     function calculateReward(uint256 start, uint256 end)
-        public
+        external
         view
         returns (uint256 reward)
     {
