@@ -18,6 +18,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
         uint256 amount; // How many tokens the user has provided.
         uint256 workingSupply; // boosted user share.
         uint256 rewardPerShare; // Accumulated reward per share.
+        uint256 pendingReward; // reward not claimed
     }
 
     // Info of each pool.
@@ -52,6 +53,8 @@ contract FarmController is NeedInitialize, WhitelistedRole {
     address public devAddr;
     // PPI Rate
     address public ppiRate;
+    // reward claimable
+    bool public claimable;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
@@ -210,8 +213,12 @@ contract FarmController is NeedInitialize, WhitelistedRole {
                 (user.workingSupply *
                     (pool.accRewardPerShare - user.rewardPerShare)) /
                 (10**pool.token.decimals());
-            if (reward > 0) {
+            reward += user.pendingReward;
+            if (claimable) {
+                user.pendingReward = 0;
                 ppi.mint(_user, reward);
+            } else {
+                user.pendingReward = reward;
             }
             user.rewardPerShare = pool.accRewardPerShare;
         }
@@ -290,5 +297,20 @@ contract FarmController is NeedInitialize, WhitelistedRole {
             oldWorkingSupply > user.workingSupply,
             "FarmController: user working supply is up-to-date"
         );
+    }
+
+    /* ==== admin functions ==== */
+    function setAddr(
+        address _treasuryAddr,
+        address _marketAddr,
+        address _devAddr
+    ) external onlyWhitelistAdmin {
+        treasuryAddr = _treasuryAddr;
+        marketAddr = _marketAddr;
+        devAddr = _devAddr;
+    }
+
+    function setClaimable(bool _claimable) external onlyWhitelistAdmin {
+        claimable = _claimable;
     }
 }
