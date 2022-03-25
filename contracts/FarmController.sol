@@ -220,8 +220,8 @@ contract FarmController is NeedInitialize, WhitelistedRole {
             } else {
                 user.pendingReward = reward;
             }
-            user.rewardPerShare = pool.accRewardPerShare;
         }
+        user.rewardPerShare = pool.accRewardPerShare;
     }
 
     function _checkpoint(uint256 _pid, address _user) internal {
