@@ -208,18 +208,16 @@ contract FarmController is NeedInitialize, WhitelistedRole {
     {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
-        if (user.workingSupply > 0) {
-            reward =
-                (user.workingSupply *
-                    (pool.accRewardPerShare - user.rewardPerShare)) /
-                (10**pool.token.decimals());
-            reward += user.pendingReward;
-            if (claimable) {
-                user.pendingReward = 0;
-                ppi.mint(_user, reward);
-            } else {
-                user.pendingReward = reward;
-            }
+        reward =
+            (user.workingSupply *
+                (pool.accRewardPerShare - user.rewardPerShare)) /
+            (10**pool.token.decimals());
+        reward += user.pendingReward;
+        if (claimable) {
+            user.pendingReward = 0;
+            ppi.mint(_user, reward);
+        } else {
+            user.pendingReward = reward;
         }
         user.rewardPerShare = pool.accRewardPerShare;
     }
