@@ -129,10 +129,7 @@ contract FarmController is NeedInitialize, WhitelistedRole {
         if (_withUpdate) {
             massUpdatePools();
         }
-        require(
-            _startTime >= block.timestamp,
-            "FarmController: invalid start time"
-        );
+        if (_startTime < block.timestamp) _startTime = block.timestamp;
         totalAllocPoint = totalAllocPoint + _allocPoint;
         poolInfo.push(
             PoolInfo({
