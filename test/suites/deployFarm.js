@@ -93,6 +93,10 @@ module.exports = function () {
       )
       .send({ from: admin });
 
+    await global.FarmController.instance.methods
+      .setClaimable(true)
+      .send({ from: admin });
+
     expect(
       await global.FarmController.instance.methods.poolLength().call(),
     ).to.equal('2');
