@@ -5,11 +5,13 @@
   "main": "index.js",
   "scripts": {
     "contract_prettier": "prettier --write contracts/**/*.sol contracts/*.sol",
-    "prettier": "prettier --single-quote --trailing-comma all --write \"test/*.js\" test/**/*.js *.js"
+    "prettier": "prettier --single-quote --trailing-comma all --write \"test/*.js\" test/**/*.js *.js",
+    "doc": "rm -rf docs & npx hardhat dodoc"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@primitivefi/hardhat-dodoc": "^0.2.3",
     "prettier": "2.2.1",
     "prettier-plugin-solidity": "1.0.0-beta.3"
   },

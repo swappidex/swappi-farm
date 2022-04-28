@@ -1,6 +1,7 @@
 require('@nomiclabs/hardhat-waffle');
 require('@nomiclabs/hardhat-truffle5');
 require('solidity-coverage');
+require('@primitivefi/hardhat-dodoc');
 
 module.exports = {
   solidity: {
@@ -21,5 +22,9 @@ module.exports = {
       allowUnlimitedContractSize: true,
       accounts: { accountsBalance: '100000000000000000000000000' },
     },
+  },
+  dodoc: {
+    runOnCompile: false,
+    include: ['MultiRewardPool.sol'],
   },
 };
