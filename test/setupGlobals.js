@@ -28,6 +28,7 @@ function loadContracts(global, w3) {
     proxy: `${path}/proxy/BeaconProxy.sol/BeaconProxy.json`,
     beacon: `${path}/proxy/UpgradeableBeacon.sol/UpgradeableBeacon.json`,
     VotingEscrow: `${path}/VotingEscrow.sol/VotingEscrow.json`,
+    MultiRewardPool: `${path}/MultiRewardPool.sol/MultiRewardPool.json`,
   };
   let keys = Object.keys(contracts);
   for (let i = 0; i < keys.length; ++i) {
