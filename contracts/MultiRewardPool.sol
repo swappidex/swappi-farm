@@ -22,7 +22,7 @@ contract MultiRewardPool is NeedInitialize, WhitelistAdminRole {
     }
 
     struct PoolInfo {
-        IERC20 token; // 
+        IERC20 token; // token to stake
         RewardInfo[] rewards; // info of reward tokens
         uint256 totalSupply; // total staked token
         uint256 lastRewardTime; // last reward update timestamp
@@ -112,14 +112,17 @@ contract MultiRewardPool is NeedInitialize, WhitelistAdminRole {
 
     function _updatePool(uint256 _pid) internal {
         PoolInfo storage pool = poolInfo[_pid];
-        if (block.timestamp <= pool.lastRewardTime) {
+        uint256 t = block.timestamp;
+        if (t <= pool.lastRewardTime || pool.lastRewardTime >= pool.endTime) {
             return;
+        }
+        if (t > pool.endTime) {
+            t = pool.endTime;
         }
         uint256 len = pool.rewards.length;
         uint256 tokenDigits = 10**pool.token.decimals();
         for (uint256 i = 0; i < len; ++i) {
-            uint256 reward =
-                (block.timestamp - pool.lastRewardTime) * pool.rewards[i].rate;
+            uint256 reward = (t - pool.lastRewardTime) * pool.rewards[i].rate;
             if (pool.totalSupply == 0) {
                 // send reward back to sponsor
                 pool.rewards[i].token.safeTransfer(pool.sponsor, reward);
@@ -130,7 +133,7 @@ contract MultiRewardPool is NeedInitialize, WhitelistAdminRole {
                     pool.totalSupply;
             }
         }
-        pool.lastRewardTime = block.timestamp;
+        pool.lastRewardTime = t;
     }
 
     function _updateUser(uint256 _pid, address _user)
