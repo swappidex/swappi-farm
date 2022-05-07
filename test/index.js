@@ -2,6 +2,7 @@ const setupGlobals = require('./setupGlobals');
 const deployTokens = require('./suites/deployTokens');
 const deploySwappi = require('./suites/deploySwappi');
 const deployFarm = require('./suites/deployFarm');
+const testMulti = require('./suites/testMulti');
 const testFarm = require('./suites/testFarm');
 const testLock = require('./suites/testLock');
 
@@ -16,4 +17,5 @@ describe('Swappi Farm Contracts', function () {
   describe('Deploy Farm', deployFarm.bind(this));
   describe('Test Farm', testFarm.bind(this));
   describe('Test Lock', testLock.bind(this));
+  describe('Test Multi Reward Pool', testMulti.bind(this));
 });
